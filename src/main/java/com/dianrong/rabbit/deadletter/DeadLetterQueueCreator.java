@@ -44,8 +44,8 @@ public class DeadLetterQueueCreator {
     this.rabbitAdmin = rabbitAdmin;
   }
 
-  public void createDeadLetterQueue(String fromExchange, String byRouteKey, String sourceQueue,
-      String delayOrRetryQueueName, Long ttl) {
+  public void createDeadLetterQueue(String fromExchange, String byRouteKey,
+      String delayOrRetryRouteKey, String sourceQueue, String delayOrRetryQueueName, Long ttl) {
     if (StringUtils.isEmpty(sourceQueue)) {
       logger.warn(
           "Have not config destination Queue, will not create delay queue by automatic，may be you must maintain binding by youself");
@@ -62,7 +62,7 @@ public class DeadLetterQueueCreator {
       if (returnQueueName != null) {
         Binding binding = BindingBuilder.bind(delayQueue)//
             .to(new DirectExchange(RabbitConstant.DEFAULT_DEADLETTEREXCHANGE_NAME))//
-            .with(byRouteKey);//
+            .with(delayOrRetryRouteKey);//
         rabbitAdmin.declareBinding(binding);
       }
     }

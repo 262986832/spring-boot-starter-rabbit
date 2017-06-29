@@ -197,7 +197,6 @@ public class RabbitAutoConfiguration {
   protected static class DelayAndRetryConfiguration {
 
     @Bean
-    @ConditionalOnSingleCandidate(RabbitTemplate.class)
     public DelayQueueScaner delayQueue(RabbitTemplate rabbitTemplate) {
       return new DelayQueueScaner(rabbitTemplate);
     }

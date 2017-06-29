@@ -59,19 +59,20 @@ public class RabbitTemplateExtend extends RabbitTemplate {
   protected void doSend(Channel channel, String exchange, String routingKey, Message message,
       boolean mandatory, CorrelationData correlationData) throws Exception {
     try {
-      String exchangeCopy = exchange;
       Map<String, Long> delayParam = DELAY_QUEUE_CONTENT.get();
       if (delayParam != null && delayParam.size() == 1) {
         String sourceQueue = delayParam.keySet().iterator().next();
         Long interval = delayParam.get(sourceQueue);
         if (interval > 0) {
           String delayQueue = sourceQueue + RabbitConstant.DEFAULT_DELAY_QUEUENAME_PREFIX;
-          deadLetterQueueCreator.createDeadLetterQueue(exchange, routingKey, sourceQueue,
-              delayQueue, interval);
-          exchangeCopy = RabbitConstant.DEFAULT_DEADLETTEREXCHANGE_NAME;
+          String delayRouteKey = routingKey + RabbitConstant.DEFAULT_DELAY_QUEUENAME_PREFIX;
+          deadLetterQueueCreator.createDeadLetterQueue(exchange, routingKey, delayRouteKey,
+              sourceQueue, delayQueue, interval);
+          String delayExchange = RabbitConstant.DEFAULT_DEADLETTEREXCHANGE_NAME;
+          super.doSend(channel, delayExchange, delayRouteKey, message, mandatory, correlationData);
         }
       }
-      super.doSend(channel, exchangeCopy, routingKey, message, mandatory, correlationData);
+      super.doSend(channel, exchange, routingKey, message, mandatory, correlationData);
     } finally {
       DELAY_QUEUE_CONTENT.remove();
     }

@@ -20,6 +20,7 @@ import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.retry.MessageRecoverer;
+import org.springframework.amqp.rabbit.retry.MissingMessageIdAdvice;
 import org.springframework.amqp.rabbit.retry.NewMessageIdentifier;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
@@ -27,6 +28,8 @@ import org.springframework.boot.autoconfigure.amqp.RabbitProperties.ListenerRetr
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
+import org.springframework.retry.policy.MapRetryContextCache;
+import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
@@ -42,6 +45,8 @@ public class ListenerRetryAdviceCustomizer implements InitializingBean {
   private final RabbitProperties rabbitPropeties;
 
   private final RabbitTemplate rabbitTemplate;
+
+  private final RetryContextCache retryContextCache = new MapRetryContextCache();
 
   private AmqpAdmin amqpAdmin;
 
@@ -63,13 +68,14 @@ public class ListenerRetryAdviceCustomizer implements InitializingBean {
         ((StatefulRetryOperationsInterceptor) methodInterceptor)
             .setRollbackClassifier(retryableClassifier);
       }
-      containerFactory.setAdviceChain(methodInterceptor);
+      RetryContextCache cache = new MapRetryContextCache();
+      containerFactory.setAdviceChain(new MissingMessageIdAdvice(cache), methodInterceptor);
     }
   }
 
   private MethodInterceptor buildInterceptor(ListenerRetry retryConfig) {
-    RetryInterceptorBuilder<?> interceptorBuilder =
-        RetryInterceptorBuilder.stateful().newMessageIdentifier(buildNewMessageIdentifier());
+    RetryInterceptorBuilder<?> interceptorBuilder = RetryInterceptorBuilder.stateful()//
+        .newMessageIdentifier(buildNewMessageIdentifier());//
     RetryTemplate retryTemplate = this.buildRetryTemplate();
     MessageRecoverer messageRecoverer =
         this.buildMessageRecoverer(retryConfig.getMaxAttempts(), retryConfig.getInitialInterval());
@@ -90,6 +96,7 @@ public class ListenerRetryAdviceCustomizer implements InitializingBean {
     RetryPolicy retryPolicy = new SimpleRetryPolicy(1);
     retryTemplate.setRetryPolicy(retryPolicy);
     retryTemplate.setThrowLastExceptionOnExhausted(false);
+    retryTemplate.setRetryContextCache(retryContextCache);
     return retryTemplate;
   }
 
@@ -103,5 +110,6 @@ public class ListenerRetryAdviceCustomizer implements InitializingBean {
       }
     };
   }
+
 
 }

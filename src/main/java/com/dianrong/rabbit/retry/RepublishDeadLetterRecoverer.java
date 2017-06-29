@@ -79,30 +79,31 @@ public class RepublishDeadLetterRecoverer implements MessageRecoverer {
     headers.put(RabbitConstant.X_REPUBLISH_TIMES, republishTimes);
     messageProperties.setRedelivered(true);
     headers.put(RabbitConstant.X_EXCEPTION_STACKTRACE, getStackTraceAsString(cause));
-    String routingKey = genRouteKey(message);
+    String retryRouteKey = genRouteKey(message);
     try {
-      if (republishTimes == 1) {
-        createRetryQueue(message);
-      }
+      retryRouteKey = createRetryQueue(message);
     } finally {
-      amqpTemplate.send(RabbitConstant.DEFAULT_DEADLETTEREXCHANGE_NAME, routingKey, message);
-      logger.info("The #" + republishTimes + " republish message ["
-          + message.getMessageProperties().getMessageId() + "] to exchange ["
-          + RabbitConstant.DEFAULT_DEADLETTEREXCHANGE_NAME + "] and routingKey[" + routingKey
+      amqpTemplate.send(RabbitConstant.DEFAULT_DEADLETTEREXCHANGE_NAME, retryRouteKey, message);
+      logger.info("Retry #" + republishTimes + " consumer message ["
+          + message.getMessageProperties().getMessageId()
+          + "] failed, and republish it to exchange ["
+          + RabbitConstant.DEFAULT_DEADLETTEREXCHANGE_NAME + "] and routingKey[" + retryRouteKey
           + "]");
     }
 
   }
 
 
-  private void createRetryQueue(Message message) {
+  private String createRetryQueue(Message message) {
     MessageProperties messageProperties = message.getMessageProperties();
     String exchange = messageProperties.getReceivedExchange();
     String routeKey = messageProperties.getReceivedRoutingKey();
     String queueName = messageProperties.getConsumerQueue();
     String retryQueueName = queueName + RabbitConstant.DEFAULT_RETRY_QUEUENAME_PREFIX;
-    deadLetterCreator.createDeadLetterQueue(exchange, routeKey, queueName, retryQueueName,
-        interval);
+    String retryRouteKey = routeKey + RabbitConstant.DEFAULT_RETRY_QUEUENAME_PREFIX;
+    deadLetterCreator.createDeadLetterQueue(exchange, routeKey, retryRouteKey, queueName,
+        retryQueueName, interval);
+    return retryRouteKey;
   }
 
   private String genRouteKey(Message message) {
