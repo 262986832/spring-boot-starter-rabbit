@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: rabbit-test-app
+  rabbitmq:
+    listener:
+      concurrency: 3
+      max-concurrency: 10
+      prefetch: 3
+      acknowledge-mode: auto
+      auto-startup: true
+      retry:
+        enabled: true
+        maxAttempts: 3
+        maxInterval: 1000
+        stateless: false
+    dynamic: true
