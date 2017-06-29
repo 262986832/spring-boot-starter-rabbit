@@ -70,6 +70,7 @@ public class RabbitTemplateExtend extends RabbitTemplate {
               sourceQueue, delayQueue, interval);
           String delayExchange = RabbitConstant.DEFAULT_DEADLETTEREXCHANGE_NAME;
           super.doSend(channel, delayExchange, delayRouteKey, message, mandatory, correlationData);
+          return;
         }
       }
       super.doSend(channel, exchange, routingKey, message, mandatory, correlationData);
