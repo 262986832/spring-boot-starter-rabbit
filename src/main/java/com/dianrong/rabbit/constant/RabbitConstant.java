@@ -22,4 +22,13 @@ public class RabbitConstant {
 
   public static final String DEFAULT_DEADLETTEREXCHANGE_NAME = "DeadLetterExchange";
 
+  public static final String DEFAULT_DELAY_QUEUENAME_PREFIX = "_delay";
+
+  public static final String DEFAULT_RETRY_QUEUENAME_PREFIX = "_retry";
+
+  public static final String X_EXCEPTION_STACKTRACE = "x-exception-stacktrace";
+
+  public static final String X_REPUBLISH_TIMES = "x-republish-times";
+
+
 }

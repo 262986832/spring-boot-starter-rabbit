@@ -41,8 +41,6 @@ public class RabbitTemplateExtend extends RabbitTemplate {
         }
       };
 
-  private static final String DEFAULT_DELAY_QUEUENAME_PREFIX = "_delay";
-
   private DeadLetterQueueCreator deadLetterQueueCreator;
 
   public void setRabbitAdmin(AmqpAdmin amqpAdmin) {
@@ -67,7 +65,7 @@ public class RabbitTemplateExtend extends RabbitTemplate {
         String sourceQueue = delayParam.keySet().iterator().next();
         Long interval = delayParam.get(sourceQueue);
         if (interval > 0) {
-          String delayQueue = sourceQueue + DEFAULT_DELAY_QUEUENAME_PREFIX;
+          String delayQueue = sourceQueue + RabbitConstant.DEFAULT_DELAY_QUEUENAME_PREFIX;
           deadLetterQueueCreator.createDeadLetterQueue(exchange, routingKey, sourceQueue,
               delayQueue, interval);
           exchangeCopy = RabbitConstant.DEFAULT_DEADLETTEREXCHANGE_NAME;

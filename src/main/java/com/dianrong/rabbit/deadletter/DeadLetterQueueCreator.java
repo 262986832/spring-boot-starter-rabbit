@@ -49,6 +49,7 @@ public class DeadLetterQueueCreator {
     if (StringUtils.isEmpty(sourceQueue)) {
       logger.warn(
           "Have not config destination Queue, will not create delay queue by automatic，may be you must maintain binding by youself");
+      return;
     }
     Properties properties = rabbitAdmin.getQueueProperties(delayOrRetryQueueName);
     if (properties == null) {

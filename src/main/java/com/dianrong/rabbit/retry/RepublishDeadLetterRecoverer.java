@@ -37,12 +37,6 @@ public class RepublishDeadLetterRecoverer implements MessageRecoverer {
 
   private static final Logger logger = LoggerFactory.getLogger(RepublishDeadLetterRecoverer.class);
 
-  public static final String X_EXCEPTION_STACKTRACE = "x-exception-stacktrace";
-
-  public static final String X_REPUBLISH_TIMES = "x-republish-times";
-
-  private static final String DEFAULT_RETRY_QUEUENAME_PREFIX = "_retry";
-
   private final AmqpTemplate amqpTemplate;
 
   private final DeadLetterQueueCreator deadLetterCreator;
@@ -69,7 +63,7 @@ public class RepublishDeadLetterRecoverer implements MessageRecoverer {
   public void recover(Message message, Throwable cause) {
     MessageProperties messageProperties = message.getMessageProperties();
     Map<String, Object> headers = message.getMessageProperties().getHeaders();
-    Integer republishTimes = (Integer) headers.get(X_REPUBLISH_TIMES);
+    Integer republishTimes = (Integer) headers.get(RabbitConstant.X_REPUBLISH_TIMES);
     if (republishTimes != null) {
       if (republishTimes >= recoverTimes) {
         logger
@@ -82,9 +76,9 @@ public class RepublishDeadLetterRecoverer implements MessageRecoverer {
     } else {
       republishTimes = 1;
     }
-    headers.put(RepublishDeadLetterRecoverer.X_REPUBLISH_TIMES, republishTimes);
+    headers.put(RabbitConstant.X_REPUBLISH_TIMES, republishTimes);
     messageProperties.setRedelivered(true);
-    headers.put(X_EXCEPTION_STACKTRACE, getStackTraceAsString(cause));
+    headers.put(RabbitConstant.X_EXCEPTION_STACKTRACE, getStackTraceAsString(cause));
     String routingKey = genRouteKey(message);
     try {
       if (republishTimes == 1) {
@@ -106,7 +100,7 @@ public class RepublishDeadLetterRecoverer implements MessageRecoverer {
     String exchange = messageProperties.getReceivedExchange();
     String routeKey = messageProperties.getReceivedRoutingKey();
     String queueName = messageProperties.getConsumerQueue();
-    String retryQueueName = queueName + DEFAULT_RETRY_QUEUENAME_PREFIX;
+    String retryQueueName = queueName + RabbitConstant.DEFAULT_RETRY_QUEUENAME_PREFIX;
     deadLetterCreator.createDeadLetterQueue(exchange, routeKey, queueName, retryQueueName,
         interval);
   }
