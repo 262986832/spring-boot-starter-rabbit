@@ -1,7 +1,14 @@
+debug: true
 spring:
+  autoconfigure: null
+  exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
   application:
     name: rabbit-test-app
   rabbitmq:
+    host: 10.18.19.126
+    username: admin
+    password: dangerous
+    virtualHost: /msgbus
     listener:
       concurrency: 3
       max-concurrency: 10

@@ -18,7 +18,7 @@ public class Sender {
   private RabbitTemplate rabbitTemplate;
 
   @Scheduled(fixedDelay = 1000L)
-  @Delay
+  @Delay(interval = 1000, queue = "testqueue")
   public void send() {
     this.rabbitTemplate.convertAndSend("testexchange", "testroute", "hello");
   }
