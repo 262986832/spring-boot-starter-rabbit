@@ -79,7 +79,7 @@ public class RepublishDeadLetterRecoverer implements MessageRecoverer {
     headers.put(RabbitConstant.X_REPUBLISH_TIMES, republishTimes);
     messageProperties.setRedelivered(true);
     headers.put(RabbitConstant.X_EXCEPTION_STACKTRACE, getStackTraceAsString(cause));
-    String retryRouteKey = genRouteKey(message);
+    String retryRouteKey = null;
     try {
       retryRouteKey = createRetryQueue(message);
     } finally {
@@ -104,10 +104,6 @@ public class RepublishDeadLetterRecoverer implements MessageRecoverer {
     deadLetterCreator.createDeadLetterQueue(exchange, routeKey, retryRouteKey, queueName,
         retryQueueName, interval);
     return retryRouteKey;
-  }
-
-  private String genRouteKey(Message message) {
-    return message.getMessageProperties().getReceivedRoutingKey();
   }
 
   private String getStackTraceAsString(Throwable cause) {

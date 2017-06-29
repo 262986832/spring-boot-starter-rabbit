@@ -68,8 +68,8 @@ public class ListenerRetryAdviceCustomizer implements InitializingBean {
         ((StatefulRetryOperationsInterceptor) methodInterceptor)
             .setRollbackClassifier(retryableClassifier);
       }
-      RetryContextCache cache = new MapRetryContextCache();
-      containerFactory.setAdviceChain(new MissingMessageIdAdvice(cache), methodInterceptor);
+      containerFactory.setAdviceChain(new MissingMessageIdAdvice(retryContextCache),
+          methodInterceptor);
     }
   }
 
