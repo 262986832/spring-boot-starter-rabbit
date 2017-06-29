@@ -3,7 +3,7 @@
   spring-boot-starter-rabbit
 
 # 功能
- use DeadLetterExchange to implements delay Queue and retry queue
- 
+ * 根据DeadLetterExchange来实现延迟队列及重试队列的功能
+  
 # Quick Start
 
